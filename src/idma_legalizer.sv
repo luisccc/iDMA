@@ -32,10 +32,16 @@ module idma_legalizer #(
     parameter type idma_mut_tf_t = logic,
     /// Mutable options type
     parameter type idma_mut_tf_opt_t = logic,
+
+    parameter int unsigned IdWidth = 32'd1,
     /// AR channel ID
-    parameter logic [3:0] AR_DEVICE_ID  = 4'd1,
+    parameter logic [IdWidth - 1 :0] ArDeviceID  = 4'd1,
     /// AW channel ID
-    parameter logic [3:0] AW_DEVICE_ID  = 4'd1
+    parameter logic [IdWidth - 1 :0] AwDeviceID  = 4'd1,
+
+    parameter int unsigned UserWidth = 32'd1,
+    parameter logic [UserWidth - 1 :0] ArUserInfo = '0,
+    parameter logic [UserWidth - 1 :0] AwUserInfo = '0
 )(
     /// Clock
     input  logic clk_i,
@@ -319,7 +325,7 @@ module idma_legalizer #(
         // assign the signals for the read meta channel
         assign r_req_o.ar_req = '{
             // id:     opt_tf_q.axi_id,
-            id:     AR_DEVICE_ID,
+            id:     ArDeviceID,
             addr:   { r_tf_q.addr[AddrWidth-1:OffsetWidth], {{OffsetWidth}{1'b0}} },
             len:    ((r_num_bytes + r_addr_offset - 'd1) >> OffsetWidth),
             size:   axi_pkg::size_t'(OffsetWidth),
@@ -329,13 +335,13 @@ module idma_legalizer #(
             prot:   opt_tf_q.src_axi_opt.prot,
             qos:    opt_tf_q.src_axi_opt.qos,
             region: opt_tf_q.src_axi_opt.region,
-            user:   '0
+            user:   ArUserInfo
         };
 
         // assign the signals for the write meta channel
         assign w_req_o.aw_req = '{
             // id:     opt_tf_q.axi_id,
-            id:     AW_DEVICE_ID,
+            id:     AwDeviceID,
             addr:   { w_tf_q.addr[AddrWidth-1:OffsetWidth], {{OffsetWidth}{1'b0}} },
             len:    ((w_num_bytes + w_addr_offset - 'd1) >> OffsetWidth),
             size:   axi_pkg::size_t'(OffsetWidth),

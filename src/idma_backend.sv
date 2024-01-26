@@ -61,13 +61,15 @@ module idma_backend #(
     /// Address Read Channel type
     parameter type ar_chan_t = logic,
     /// AR channel ID
-    parameter logic [3:0] AR_DEVICE_ID  = 4'd1,
+    parameter logic [AxiIdWidth - 1:0] ArDeviceID  = 4'd1,
     /// AW channel ID
-    parameter logic [3:0] AW_DEVICE_ID  = 4'd1,
+    parameter logic [AxiIdWidth - 1:0] AwDeviceID  = 4'd1,
     /// Strobe Width (do not override!)
     parameter int unsigned StrbWidth = DataWidth / 8,
     /// Offset Width (do not override!)
-    parameter int unsigned OffsetWidth = $clog2(StrbWidth)
+    parameter int unsigned OffsetWidth = $clog2(StrbWidth),
+    parameter logic [UserWidth - 1 :0] ArUserInfo = '0,
+    parameter logic [UserWidth - 1 :0] AwUserInfo = '0
 )(
     /// Clock
     input  logic clk_i,
@@ -330,8 +332,12 @@ module idma_backend #(
             .idma_w_req_t      ( idma_w_req_t      ),
             .idma_mut_tf_t     ( idma_mut_tf_t     ),
             .idma_mut_tf_opt_t ( idma_mut_tf_opt_t ),
-            .AR_DEVICE_ID      ( AR_DEVICE_ID      ),
-            .AW_DEVICE_ID      ( AW_DEVICE_ID      )
+            .IdWidth           ( AxiIdWidth        ),
+            .ArDeviceID        ( ArDeviceID        ),
+            .AwDeviceID        ( AwDeviceID        ),
+            .UserWidth         ( UserWidth         ),
+            .ArUserInfo        ( ArUserInfo        ),
+            .AwUserInfo        ( AwUserInfo        )
         ) i_idma_legalizer (
             .clk_i,
             .rst_ni,
@@ -374,7 +380,6 @@ module idma_backend #(
             // assemble AR request
             assign r_req.ar_req = '{
                 // id:     idma_req_i.opt.axi_id,
-                id:     AR_DEVICE_ID,
                 addr:   { idma_req_i.src_addr[AddrWidth-1:OffsetWidth], {{OffsetWidth}{1'b0}} },
                 len:    len,
                 size:   axi_pkg::size_t'(OffsetWidth),
@@ -384,13 +389,13 @@ module idma_backend #(
                 prot:   idma_req_i.opt.src.prot,
                 qos:    idma_req_i.opt.src.qos,
                 region: idma_req_i.opt.src.region,
-                user:   '0
+                user:   ArUserInfo
             };
 
             // assemble AW request
             assign w_req.aw_req = '{
                 // id:     idma_req_i.opt.axi_id,
-                id:     AW_DEVICE_ID,
+                id:     AwDeviceID,
                 addr:   { idma_req_i.dst_addr[AddrWidth-1:OffsetWidth], {{OffsetWidth}{1'b0}} },
                 len:    len,
                 size:   axi_pkg::size_t'(OffsetWidth),
@@ -401,7 +406,7 @@ module idma_backend #(
                 qos:    idma_req_i.opt.dst.qos,
                 region: idma_req_i.opt.dst.region,
                 user:   '0,
-                atop:   '0
+                atop:   AwUserInfo
             };
         end else if (Protocol == idma_pkg::AXI_LITE) begin : gen_axi_lite_ar_aw_req
             // assemble AR request

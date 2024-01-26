@@ -27,13 +27,18 @@ module dma_core_wrap #(
   parameter int unsigned AXI_ID_WIDTH       = -1,
   parameter int unsigned AXI_SLV_ID_WIDTH   = -1,
 
-  parameter logic [23:0] AR_DEVICE_ID       = 24'd1,
-  parameter logic [23:0] AW_DEVICE_ID       = 24'd1
+  /// AR channel ID
+  parameter logic [AXI_ID_WIDTH - 1:0] AR_DEVICE_ID   = 4'd1,
+    /// AW channel ID
+  parameter logic [AXI_ID_WIDTH - 1:0] AW_DEVICE_ID   = 4'd1,
+
+  parameter logic [AXI_USER_WIDTH - 1 :0] AR_USER_INFO = '0,
+  parameter logic [AXI_USER_WIDTH - 1 :0] AW_USER_INFO = '0
 ) (
   input  logic        clk_i,
   input  logic        rst_ni,
   input  logic        testmode_i,
-  AXI_BUS_MMU.Master  axi_master,
+  AXI_BUS.Master      axi_master,
   AXI_BUS.Slave       axi_slave,
 
   output logic [1:0]  irq_o
@@ -47,22 +52,11 @@ module dma_core_wrap #(
   typedef logic [AXI_ID_WIDTH-1:0]       axi_id_t;
   typedef logic [AXI_SLV_ID_WIDTH-1:0]   axi_slv_id_t;
 
-
   `AXI_TYPEDEF_ALL(axi_mst, addr_t, axi_id_t, data_t, strb_t, user_t)
   axi_mst_req_t axi_mst_req;
   axi_mst_resp_t axi_mst_resp;
   `AXI_ASSIGN_FROM_REQ(axi_master, axi_mst_req)
   `AXI_ASSIGN_TO_RESP(axi_mst_resp, axi_master)
-
-  // Manually assign IOMMU-specific signals
-    // AW
-    assign axi_master.aw_stream_id     = AW_DEVICE_ID;
-    assign axi_master.aw_ss_id_valid   = 1'b0;
-    assign axi_master.aw_substream_id  = 20'b0;
-    // AR
-    assign axi_master.ar_stream_id     = AR_DEVICE_ID;
-    assign axi_master.ar_ss_id_valid   = 1'b0;
-    assign axi_master.ar_substream_id  = 20'b0;
 
   `AXI_TYPEDEF_ALL(axi_slv, addr_t, axi_slv_id_t, data_t, strb_t, user_t)
   axi_slv_req_t axi_slv_req;
@@ -155,8 +149,10 @@ module dma_core_wrap #(
     .protocol_rsp_t      ( axi_mst_resp_t              ),
     .aw_chan_t           ( axi_mst_aw_chan_t           ),
     .ar_chan_t           ( axi_mst_ar_chan_t           ),
-    .AR_DEVICE_ID        ( AR_DEVICE_ID[3:0]           ),
-    .AW_DEVICE_ID        ( AW_DEVICE_ID[3:0]           )
+    .ArDeviceID          ( AR_DEVICE_ID                ),
+    .AwDeviceID          ( AW_DEVICE_ID                ),
+    .ArUserInfo          ( AR_USER_INFO                ),
+    .AwUserInfo          ( AW_USER_INFO                )
   ) i_idma_backend (
     .clk_i,
     .rst_ni,
