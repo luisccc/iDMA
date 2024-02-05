@@ -35,11 +35,11 @@ module dma_core_wrap #(
   parameter logic [AXI_USER_WIDTH - 1 :0] AR_USER_INFO = '0,
   parameter logic [AXI_USER_WIDTH - 1 :0] AW_USER_INFO = '0
 ) (
-  input  logic        clk_i,
-  input  logic        rst_ni,
-  input  logic        testmode_i,
-  AXI_BUS.Master      axi_master,
-  AXI_BUS.Slave       axi_slave,
+  input  logic         clk_i,
+  input  logic         rst_ni,
+  input  logic         testmode_i,
+  AXI_BUS_NSAID.Master axi_master,
+  AXI_BUS.Slave        axi_slave,
 
   output logic [1:0]  irq_o
 );
@@ -57,6 +57,12 @@ module dma_core_wrap #(
   axi_mst_resp_t axi_mst_resp;
   `AXI_ASSIGN_FROM_REQ(axi_master, axi_mst_req)
   `AXI_ASSIGN_TO_RESP(axi_mst_resp, axi_master)
+
+  // Manually assign NSAID-specific signals
+  // AW
+  assign axi_master.aw_nsaid     = AW_DEVICE_ID;
+  // AR
+  assign axi_master.ar_nsaid     = AR_DEVICE_ID;
 
   `AXI_TYPEDEF_ALL(axi_slv, addr_t, axi_slv_id_t, data_t, strb_t, user_t)
   axi_slv_req_t axi_slv_req;
