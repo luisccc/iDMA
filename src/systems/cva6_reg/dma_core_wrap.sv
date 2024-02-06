@@ -29,11 +29,16 @@ module dma_core_wrap #(
 
   /// AR channel ID
   parameter logic [AXI_ID_WIDTH - 1:0] AR_DEVICE_ID   = 4'd1,
-    /// AW channel ID
+  /// AW channel ID
   parameter logic [AXI_ID_WIDTH - 1:0] AW_DEVICE_ID   = 4'd1,
 
   parameter logic [AXI_USER_WIDTH - 1 :0] AR_USER_INFO = '0,
   parameter logic [AXI_USER_WIDTH - 1 :0] AW_USER_INFO = '0
+  
+  /// AR channel NSAID
+  parameter logic [4 - 1:0] AR_NSAID   = 4'd1,
+  /// AW channel NSAID
+  parameter logic [4 - 1:0] AW_NSAID   = 4'd1
 ) (
   input  logic         clk_i,
   input  logic         rst_ni,
@@ -60,9 +65,9 @@ module dma_core_wrap #(
 
   // Manually assign NSAID-specific signals
   // AW
-  assign axi_master.aw_nsaid     = AW_DEVICE_ID;
+  assign axi_master.aw_nsaid     = AW_NSAID;
   // AR
-  assign axi_master.ar_nsaid     = AR_DEVICE_ID;
+  assign axi_master.ar_nsaid     = AR_NSAID;
 
   `AXI_TYPEDEF_ALL(axi_slv, addr_t, axi_slv_id_t, data_t, strb_t, user_t)
   axi_slv_req_t axi_slv_req;
