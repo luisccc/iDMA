@@ -33,7 +33,7 @@ module dma_core_wrap #(
   parameter logic [AXI_ID_WIDTH - 1:0] AW_DEVICE_ID   = 4'd1,
 
   parameter logic [AXI_USER_WIDTH - 1 :0] AR_USER_INFO = '0,
-  parameter logic [AXI_USER_WIDTH - 1 :0] AW_USER_INFO = '0
+  parameter logic [AXI_USER_WIDTH - 1 :0] AW_USER_INFO = '0,
   
   /// AR channel NSAID
   parameter logic [4 - 1:0] AR_NSAID   = 4'd1,
