@@ -13,6 +13,11 @@
   - Added one interrupt pending register with two bits: ipsr.rip is set after a read is completed, ipsr.wip is set after a write is completed.
   - These fields have W1C behavior
   - Added an output port for wired interurpts driven by the ipsr register. irq[0] is driven by ipsr.rip and irq[1] is driven by ipsr.wip.
+
+  Luis Cunha
+  - Added Parametrization to the BufferDepth for better compatibility with cva6 when in simulation
+  - User signal can now be costumized with AR_DEVICE_ID and AW_DEVICE_ID
+  - Interface change to support Non-secure Access Identiﬁers (NSAID)
 */
 
 `include "axi/assign.svh"
@@ -21,6 +26,7 @@
 `include "register_interface/typedef.svh"
 
 module dma_core_wrap #(
+  parameter int unsigned BufferDepth        =  3,  // Propagate out. When simulation with cva6 this buffer needs to be as big as the transfers you want to make
   parameter int unsigned AXI_ADDR_WIDTH     = -1,
   parameter int unsigned AXI_DATA_WIDTH     = -1,
   parameter int unsigned AXI_USER_WIDTH     = -1,
@@ -144,7 +150,7 @@ module dma_core_wrap #(
     .UserWidth           ( AXI_USER_WIDTH              ),
     .AxiIdWidth          ( AXI_ID_WIDTH                ),
     .NumAxInFlight       ( 2                           ),
-    .BufferDepth         ( 3                           ),
+    .BufferDepth         ( BufferDepth                 ),
     .TFLenWidth          ( TFLenWidth                  ),
     .RAWCouplingAvail    ( 1'b1                        ),
     .MaskInvalidData     ( 1'b1                        ),
